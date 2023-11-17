@@ -5,10 +5,7 @@ import { iso } from "@optics";
 
 describe("Iso", () => {
   describe("double iso", () => {
-    const doubleIso = iso<number, number>(
-      (n) => n * 2,
-      (n) => n / 2
-    );
+    const doubleIso = iso<number, number>((n) => n * 2)((n) => n / 2);
 
     test("double 2 to 4", () => {
       assert.strictEqual(doubleIso.get(2), 4);
@@ -28,7 +25,11 @@ describe("Iso", () => {
   });
 
   describe("makeInt iso", () => {
-    const makeInt = iso<string, number>(parseInt, String);
+    const makeInt = iso<string, number>(parseInt)(String);
+
+    test("An alphabet string", () => {
+      assert.strictEqual(makeInt.get("hello"), NaN);
+    });
 
     test("roundTripOneWay with 2", () => {
       assert.strictEqual(makeInt.reverseGet(makeInt.get("2")), "2");
@@ -44,10 +45,6 @@ describe("Iso", () => {
 
     test("roundTripOtherWay with NaN", () => {
       assert.strictEqual(makeInt.get(makeInt.reverseGet(NaN)), NaN);
-    });
-
-    test("An alphabet string", () => {
-      assert.strictEqual(makeInt.get("hello"), NaN);
     });
   });
 });

@@ -3,12 +3,11 @@ interface Iso<S, A> {
   readonly reverseGet: (a: A) => S;
 }
 
-export function iso<S, A>(
-  get: Iso<S, A>["get"],
-  reverseGet: Iso<S, A>["reverseGet"]
-): Iso<S, A> {
-  return {
-    get,
-    reverseGet,
+export function iso<S, A>(get: Iso<S, A>["get"]) {
+  return function (reverseGet: Iso<S, A>["reverseGet"]): Iso<S, A> {
+    return {
+      get,
+      reverseGet,
+    };
   };
 }
