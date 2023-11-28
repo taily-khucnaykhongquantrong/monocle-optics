@@ -1,4 +1,4 @@
-import * as iso from "@optics/iso";
+import { iso } from "@optics";
 
 describe("Iso", () => {
   describe("double iso", () => {

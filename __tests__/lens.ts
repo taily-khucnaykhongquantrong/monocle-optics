@@ -1,4 +1,4 @@
-import * as lens from "@optics/lens";
+import { lens } from "@optics";
 import { type Functor } from "@optics/utils";
 
 describe("Lens", () => {
