@@ -11,7 +11,7 @@ import {
 
 type Lens<S, A> = {
   get: Map<S, Either<undefined, A>>;
-  replace: Map<A, Map<S, S>>;
+  replace: (value: A) => Map<S, S>;
   modify: (f: Map<A, A>) => Map<S, S>;
   modifyF: <T, FT>(
     f: Map<A, T>

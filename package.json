@@ -25,7 +25,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc && tsc-alias",
     "watch": "tsc && (concurrently \"tsc --watch\" \"tsc-alias --watch\")",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "test:coverage": "jest --detectOpenHandles --coverage"
   },
   "type": "module"
 }

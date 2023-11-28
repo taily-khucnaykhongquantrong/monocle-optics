@@ -31,7 +31,11 @@ export function replace<S extends Record<PropertyKey, unknown> | unknown[], A>(
         a = (a as Record<PropertyKey, unknown>)[k];
       }
     });
-    if (lastKey) {
+    if (
+      lastKey !== undefined &&
+      a &&
+      (a as Record<PropertyKey, unknown>)[lastKey]
+    ) {
       (a as Record<PropertyKey, unknown>)[lastKey] = value;
     }
   } else {

@@ -250,6 +250,201 @@ describe("Lens", () => {
       ]);
     });
   });
+  describe("Composition of composed lenses", () => {
+    type Family = {
+      owner: Person;
+      members: Person[];
+    };
+
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const family: Family = {
+      owner: { age: 48, name: "Hong" },
+      members: [person],
+    };
+    const firstMemberLens = lens.makeLens<Family, Person>(["members", 0]);
+    const addressLens = lens.makeLens<Person, Address>("address");
+    const streetNumberLens = lens.makeLens<Address, number>("streetNumber");
+    const memberAddressLens = lens.compose(firstMemberLens, addressLens);
+    const memberStreetNumberLens = lens.compose(
+      memberAddressLens,
+      streetNumberLens
+    );
+
+    it("get streetNumber, value is 17", () => {
+      expect(memberStreetNumberLens.get(family)).toBe(17);
+    });
+    it("replace streetNumber, value is 18", () => {
+      expect(memberStreetNumberLens.replace(18)(family)).toMatchObject({
+        ...family,
+        members: [
+          {
+            ...family.members[0],
+            address: {
+              ...family.members[0].address,
+              streetNumber: 18,
+            },
+          },
+        ],
+      });
+    });
+    it("modify streetNumber, value is streetNumber + 5", () => {
+      expect(memberStreetNumberLens.modify((n) => n + 5)(family)).toMatchObject(
+        {
+          ...family,
+          members: [
+            {
+              ...family.members[0],
+              address: {
+                ...family.members[0].address,
+                streetNumber: family.members[0].address!.streetNumber + 5,
+              },
+            },
+          ],
+        }
+      );
+    });
+    it("modify streetNumber with Functor, value is streetNumber of neighbors", () => {
+      const getNeighborNumber = (streetNumber: number) =>
+        streetNumber === 0
+          ? [streetNumber + 1]
+          : [streetNumber - 1, streetNumber + 1];
+      const neighborFunctor =
+        ([n1, n2]: number[]) =>
+        (replacer: (n: number) => Family) => [replacer(n1), replacer(n2)];
+
+      expect(
+        memberStreetNumberLens.modifyF(getNeighborNumber)(neighborFunctor)(
+          family
+        )
+      ).toMatchObject([
+        {
+          ...family,
+          members: [
+            {
+              ...family.members[0],
+              address: {
+                ...family.members[0].address,
+                streetNumber: family.members[0].address!.streetNumber - 1,
+              },
+            },
+          ],
+        },
+        {
+          ...family,
+          members: [
+            {
+              ...family.members[0],
+              address: {
+                ...family.members[0].address,
+                streetNumber: family.members[0].address!.streetNumber + 1,
+              },
+            },
+          ],
+        },
+      ]);
+    });
+  });
+  describe("Composed first undefined lenses", () => {
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const undefinedLens1 = lens.makeLens<Person, Address>([
+      "address",
+      "nothing",
+    ]);
+    const undefinedLens2 = lens.makeLens<Address, number>([
+      "streetNumber",
+      "nothing",
+      "here",
+    ]);
+    const composedUndefinedLens = lens.compose(undefinedLens1, undefinedLens2);
+
+    it("get streetNumber, value is 17", () => {
+      expect(composedUndefinedLens.get(person)).toBeUndefined();
+    });
+    it("replace streetNumber, value is 18", () => {
+      expect(composedUndefinedLens.replace(18)(person)).toMatchObject(person);
+    });
+    it("modify streetNumber, value is streetNumber + 5", () => {
+      expect(composedUndefinedLens.modify((n) => n + 5)(person)).toMatchObject(
+        person
+      );
+    });
+    it("modify streetNumber with Functor, value is streetNumber of neighbors", () => {
+      const getNeighborNumber = (streetNumber: number) =>
+        streetNumber === 0
+          ? [streetNumber + 1]
+          : [streetNumber - 1, streetNumber + 1];
+      const neighborFunctor =
+        ([n1, n2]: number[]) =>
+        (replacer: (n: number) => Person) => [replacer(n1), replacer(n2)];
+
+      expect(
+        composedUndefinedLens.modifyF(getNeighborNumber)(neighborFunctor)(
+          person
+        )
+      ).toBeUndefined();
+    });
+  });
+  describe("Composed second undefined lenses", () => {
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const undefinedLens1 = lens.makeLens<Person, Address>("address");
+    const undefinedLens2 = lens.makeLens<Address, number>([
+      "streetNumber",
+      "nothing",
+      "here",
+    ]);
+    const composedUndefinedLens = lens.compose(undefinedLens1, undefinedLens2);
+
+    it("get streetNumber, value is 17", () => {
+      expect(composedUndefinedLens.get(person)).toBeUndefined();
+    });
+    it("replace streetNumber, value is 18", () => {
+      expect(composedUndefinedLens.replace(18)(person)).toMatchObject(person);
+    });
+    it("modify streetNumber, value is streetNumber + 5", () => {
+      expect(composedUndefinedLens.modify((n) => n + 5)(person)).toMatchObject(
+        person
+      );
+    });
+    it("modify streetNumber with Functor, value is streetNumber of neighbors", () => {
+      const getNeighborNumber = (streetNumber: number) =>
+        streetNumber === 0
+          ? [streetNumber + 1]
+          : [streetNumber - 1, streetNumber + 1];
+      const neighborFunctor =
+        ([n1, n2]: number[]) =>
+        (replacer: (n: number) => Person) => [replacer(n1), replacer(n2)];
+
+      expect(
+        composedUndefinedLens.modifyF(getNeighborNumber)(neighborFunctor)(
+          person
+        )
+      ).toBeUndefined();
+    });
+  });
 
   describe("Lens from path", () => {
     const address: Address = {
@@ -309,6 +504,112 @@ describe("Lens", () => {
           address: { ...address, streetNumber: address.streetNumber + 1 },
         },
       ]);
+    });
+  });
+  describe("Lens from undefined path", () => {
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const nullLens = lens.makeLens<Person, undefined>([
+      "address",
+      "streetNumber",
+      "nothing",
+      "here",
+    ]);
+
+    it("Get null lens, value is undefined", () => {
+      expect(nullLens.get(person)).toBeUndefined();
+    });
+    it("Replace null lens, value is undefined", () => {
+      expect(nullLens.replace(undefined)(person)).toMatchObject(person);
+    });
+  });
+
+  describe("Laws", () => {
+    const address = {
+      streetNumber: 1,
+      streetName: "Ab",
+    };
+    const streetNumberLens = lens.makeLens<Address, number>("streetNumber");
+
+    it("Get replace", () => {
+      const n = streetNumberLens.get(address);
+      if (n) {
+        expect(streetNumberLens.replace(n)(address)).toMatchObject(address);
+      }
+    });
+    it("Replace get", () => {
+      expect(streetNumberLens.get(streetNumberLens.replace(22)(address))).toBe(
+        22
+      );
+    });
+  });
+  describe("Laws composed", () => {
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const addressLens = lens.makeLens<Person, Address>("address");
+    const streetNumberFromAddressLens = lens.makeLens<Address, number>(
+      "streetNumber"
+    );
+    const streetNumberFromPersonLens = lens.compose(
+      addressLens,
+      streetNumberFromAddressLens
+    );
+
+    it("Get replace", () => {
+      const n = streetNumberFromPersonLens.get(person);
+      if (n) {
+        expect(streetNumberFromPersonLens.replace(n)(person)).toMatchObject(
+          person
+        );
+      }
+    });
+    it("Replace get", () => {
+      expect(
+        streetNumberFromPersonLens.get(
+          streetNumberFromPersonLens.replace(22)(person)
+        )
+      ).toBe(22);
+    });
+  });
+  describe("Laws fromPath", () => {
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const streetNumberLens = lens.makeLens<Person, number>([
+      "address",
+      "streetNumber",
+    ]);
+
+    it("Get replace", () => {
+      const n = streetNumberLens.get(person);
+      if (n) {
+        expect(streetNumberLens.replace(n)(person)).toMatchObject(person);
+      }
+    });
+    it("Replace get", () => {
+      expect(streetNumberLens.get(streetNumberLens.replace(22)(person))).toBe(
+        22
+      );
     });
   });
 });
