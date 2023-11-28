@@ -12,19 +12,54 @@ export type PartialRecord<K extends PropertyKey, V> = {
 
 export type Functor<S, A, T, EffectT> = (fa: T) => (f: Map<A, S>) => EffectT;
 
-export function replace<S>(
-  s: Record<Key<S>, unknown>,
-  key: Key<S>,
-  value: unknown
-): S {
-  let result: Record<PropertyKey, unknown> | unknown[];
+export const ERROR_MESSAGE = { ILLEGAL_LENS_KEY: "Illegal key" };
 
-  if (Array.isArray(s)) {
-    result = [];
+export type Either<L, R> = L | R;
+
+export function replace<S extends Record<PropertyKey, unknown> | unknown[], A>(
+  s: S,
+  key: PropertyKey | PropertyKey[],
+  value: A
+): S {
+  const clonedS = structuredClone(s);
+  let a: S | A | unknown = clonedS;
+
+  if (Array.isArray(key)) {
+    let lastKey = key.at(-1);
+    key.slice(0, key.length - 1).forEach((k) => {
+      if (a && typeof a === "object") {
+        a = (a as Record<PropertyKey, unknown>)[k];
+      }
+    });
+    if (lastKey) {
+      (a as Record<PropertyKey, unknown>)[lastKey] = value;
+    }
   } else {
-    result = {};
+    if (a && typeof a === "object") {
+      (a as Record<PropertyKey, unknown>)[key] = value;
+    }
   }
 
-  // Using Object.assign to replace value whether it is an Object or Array.
-  return Object.assign(result, s, { [key]: value }) as S;
+  return clonedS;
+}
+
+export function fromPath<
+  S extends PartialRecord<PropertyKey, unknown> | unknown[],
+  A,
+>(path: PropertyKey[]): (s: S) => Either<undefined, A> {
+  return function (s) {
+    let result: Record<PropertyKey, unknown> | unknown[] | undefined = s;
+
+    for (const key of path) {
+      if (!result) {
+        return undefined;
+      }
+
+      result = result[key as any] as
+        | PartialRecord<PropertyKey, unknown>
+        | unknown[];
+    }
+
+    return result as A;
+  };
 }

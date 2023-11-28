@@ -1,5 +1,5 @@
-import * as lens from "@optics";
-import { type Functor, type Map } from "@optics/utils";
+import * as lens from "@optics/lens";
+import { type Functor } from "@optics/utils";
 
 describe("Lens", () => {
   type Person = {
@@ -12,6 +12,10 @@ describe("Lens", () => {
     streetName: string;
   };
 
+  /**
+   * Must use Array<number | string> due to we test number => string functor.
+   * At the end of this test, we focus on array of string or number.
+   */
   describe("Array of number Lens", () => {
     const arr: Array<number | string> = new Array(3)
       .fill(0)
@@ -39,11 +43,7 @@ describe("Lens", () => {
 
     it("Modify 5th element with undefined + 5", () => {
       expect(arrOf5thLens.modify((n) => Number(n) + 5)(arr)).toMatchObject([
-        1,
-        2,
-        3,
-        undefined,
-        NaN,
+        1, 2, 3,
       ]);
     });
 
@@ -56,7 +56,7 @@ describe("Lens", () => {
         arrOf5thLens.modifyF<string, Array<number | string>>(String)(
           numberToStringFunctor
         )(arr)
-      ).toMatchObject([1, 2, 3, undefined, "undefined"]);
+      ).toBeUndefined();
     });
   });
 
@@ -133,7 +133,7 @@ describe("Lens", () => {
     });
   });
 
-  describe("Address with Street number Lens", () => {
+  describe("Address with Street Number Lens", () => {
     const address = {
       streetNumber: 1,
       streetName: "Ab",
@@ -246,6 +246,67 @@ describe("Lens", () => {
             ...person.address,
             streetNumber: person.address!.streetNumber + 1,
           },
+        },
+      ]);
+    });
+  });
+
+  describe("Lens from path", () => {
+    const address: Address = {
+      streetName: "Nguyen Duy Trinh",
+      streetNumber: 17,
+    };
+    const person: Person = {
+      age: 18,
+      name: "Tai",
+      address,
+    };
+    const streetNumberLens = lens.makeLens<Person, number>([
+      "address",
+      "streetNumber",
+    ]);
+    const getNeighborNumber = (streetNumber: number) =>
+      streetNumber === 0
+        ? [streetNumber + 1]
+        : [streetNumber - 1, streetNumber + 1];
+    const neighborFunctor: Functor<Person, number, number[], Person[]> =
+      ([n1, n2]) =>
+      (replacer) => [replacer(n1), replacer(n2)];
+
+    it("Get street number, value is 17", () => {
+      expect(streetNumberLens.get(person)).toBe(17);
+    });
+    it("Get street number, value is address.streetNumber", () => {
+      expect(streetNumberLens.get(person)).toBe(person.address?.streetNumber);
+    });
+    it("Replace street number, value is 2", () => {
+      expect(streetNumberLens.replace(2)(person)).toMatchObject({
+        ...person,
+        address: {
+          ...address,
+          streetNumber: 2,
+        },
+      });
+    });
+    it("Modify street number, value is 17 + 10", () => {
+      expect(streetNumberLens.modify((n) => n + 10)(person)).toMatchObject({
+        ...person,
+        address: { ...address, streetNumber: address.streetNumber + 10 },
+      });
+    });
+    it("Modify street number with functor, value is list of neighbors", () => {
+      expect(
+        streetNumberLens.modifyF<number[], Person[]>(getNeighborNumber)(
+          neighborFunctor
+        )(person)
+      ).toMatchObject([
+        {
+          ...person,
+          address: { ...address, streetNumber: address.streetNumber - 1 },
+        },
+        {
+          ...person,
+          address: { ...address, streetNumber: address.streetNumber + 1 },
         },
       ]);
     });

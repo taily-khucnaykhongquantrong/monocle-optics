@@ -14,6 +14,10 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  rules: {},
+  rules: {
+    "@typescript-eslint/naming-convention": {
+      format: ["strictCamelCase", "UPPER_CASE"],
+    },
+  },
   plugins: ["jest"],
 };

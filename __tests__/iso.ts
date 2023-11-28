@@ -1,8 +1,8 @@
-import { iso } from "@optics";
+import * as iso from "@optics/iso";
 
 describe("Iso", () => {
   describe("double iso", () => {
-    const doubleIso = iso<number, number>((n) => n * 2)((n) => n / 2);
+    const doubleIso = iso.makeIso<number, number>((n) => n * 2)((n) => n / 2);
 
     it("double 2 to 4", () => {
       expect(doubleIso.get(2)).toEqual(4);
@@ -22,7 +22,7 @@ describe("Iso", () => {
   });
 
   describe("makeInt iso", () => {
-    const makeInt = iso<string, number>(parseInt)(String);
+    const makeInt = iso.makeIso<string, number>(parseInt)(String);
 
     it("An alphabet string", () => {
       expect(makeInt.get("hello")).toEqual(NaN);
