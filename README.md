@@ -61,7 +61,8 @@ const neighborFunctor: Functor<Address, number, number[], Address[]> =
   ([n1, n2]) =>
   (replacer) => [replacer(n1), replacer(n2)];
 
-// 
+// Boom 💥! Now we have a tuple of neighbor addresses.
+// [number, number] => [Address, Address].
 expect(
   addressNumberLens.modifyF<number[], Address[]>(getNeighborNumber)(
     neighborFunctor
