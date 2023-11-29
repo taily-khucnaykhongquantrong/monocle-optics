@@ -1,6 +1,12 @@
-# monocle-optics-ts
+# monocle-optics
 
 My TypeScript implementation of https://www.optics.dev/Monocle/docs/optics.
+
+![npm](https://img.shields.io/npm/v/monocle-optics)
+![npm](https://img.shields.io/npm/dt/monocle-optics)
+![node-current](https://img.shields.io/node/v/monocle-optics)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/monocle-optics)
+
 
 ## Introduction
 
