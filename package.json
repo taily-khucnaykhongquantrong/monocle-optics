@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "engines": {
     "node": ">= 20",
-    "npm": "> 9",
-    "pnpm": "> 8"
+    "npm": ">= 9",
+    "pnpm": ">= 8"
   },
   "dependencies": {
     "eslint-scope": "^7.2.2",
@@ -36,7 +36,12 @@
   },
   "type": "module",
   "description": "My typescript implementation of https://www.optics.dev/Monocle/docs/optics.",
-  "main": "src/index.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "prepare": "pnpm build",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/taily-khucnaykhongquantrong/optics-ts.git"

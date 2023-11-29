@@ -1,0 +1,5 @@
+dist
+coverage
+__tests__
+.vscode
+jest.config.js
