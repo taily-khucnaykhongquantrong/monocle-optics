@@ -1,5 +1,5 @@
 {
-  "name": "@optics-ts",
+  "name": "optics",
   "version": "0.0.1",
   "engines": {
     "node": ">= 20",
