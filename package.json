@@ -2,9 +2,7 @@
   "name": "monocle-optics",
   "version": "0.0.1",
   "engines": {
-    "node": ">= 20",
-    "npm": ">= 9",
-    "pnpm": ">= 8"
+    "node": ">= 20.0.0"
   },
   "dependencies": {
     "eslint-scope": "^7.2.2",
