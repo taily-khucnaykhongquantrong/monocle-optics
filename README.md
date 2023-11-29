@@ -1,4 +1,4 @@
-# optics-ts
+# monocle-optics-ts
 
 My TypeScript implementation of https://www.optics.dev/Monocle/docs/optics.
 
